@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Agentic AI System</title>
+
+<style>
+
+body{
+    font-family:Arial;
+    background:#0f172a;
+    color:white;
+    text-align:center;
+}
+
+
+input{
+    width:60%;
+    padding:12px;
+    border-radius:8px;
+}
+
+
+button{
+
+    padding:12px 25px;
+    cursor:pointer;
+    border-radius:8px;
+
+}
+
+
+#output{
+
+    margin:30px auto;
+    width:80%;
+    background:#1e293b;
+    padding:20px;
+    border-radius:15px;
+    text-align:left;
+    height:500px;
+    overflow:auto;
+
+}
+
+
+.card{
+
+background:#334155;
+padding:15px;
+margin:15px;
+border-radius:10px;
+
+}
+
+
+.agent{
+
+font-size:20px;
+font-weight:bold;
+color:#38bdf8;
+
+}
+
+
+.agent-box{
+
+background:#334155;
+padding:20px;
+margin:15px;
+border-radius:12px;
+text-align:left;
+
+}
+
+
+.agent-box h3{
+
+color:#38bdf8;
+
+}
+
+
+.success{
+
+background:#14532d;
+padding:20px;
+margin:15px;
+border-radius:12px;
+text-align:left;
+
+}
+
+
+pre{
+
+white-space:pre-wrap;
+font-size:15px;
+
+}
+
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+<h1>🚀 Agentic AI System</h1>
+
+
+<input id="task" placeholder="Enter complex task">
+
+
+<button onclick="runAgent()">
+Run Agents
+</button>
+
+
+
+<div id="output"></div>
+
+
+
+<script>
+
+
+function runAgent(){
+
+
+let task=document.getElementById("task").value;
+
+let output=document.getElementById("output");
+
+
+output.innerHTML="";
+
+
+fetch("/run?task="+task)
+
+.then(response=>{
+
+
+const reader=response.body.getReader();
+
+const decoder=new TextDecoder();
+
+
+
+function read(){
+
+
+reader.read().then(({done,value})=>{
+
+
+if(done)
+return;
+
+
+let text=decoder.decode(value);
+
+
+
+try{
+
+
+let data=JSON.parse(text);
+
+
+
+if(data.agent){
+
+
+output.innerHTML += `
+
+<div class="card">
+
+
+<div class="agent">
+
+🚀 ${data.agent.toUpperCase()} AGENT
+
+</div>
+
+
+<p>
+
+${formatOutput(data.output)}
+
+</p>
+
+
+</div>
+
+`;
+
+}
+
+
+if(data.final){
+
+
+output.innerHTML += `
+
+
+<div class="card">
+
+<h2>
+✅ FINAL RESULT
+</h2>
+
+
+<div class="final-text">
+
+${formatOutput(data.results[3])}
+
+</div>
+
+
+</div>
+
+
+`;
+
+}
+
+
+
+}
+
+catch{
+
+
+try {
+
+    let data = JSON.parse(text);
+
+    if(data.agent){
+
+        output.innerHTML += `
+        <div class="agent-box">
+
+        <h3>🚀 ${data.agent.toUpperCase()} AGENT</h3>
+
+        <hr>
+
+        <pre>${JSON.stringify(
+            data.output,
+            null,
+            2
+        )}</pre>
+
+        </div>
+        `;
+
+    }
+    else if(data.final){
+
+        output.innerHTML += `
+        <div class="success">
+
+        <h2>✅ FINAL RESULT</h2>
+
+        <pre>
+        ${JSON.stringify(data.results[3],null,2)}
+        </pre>
+
+        </div>
+        `;
+
+    }
+
+
+}
+catch{
+
+    output.innerHTML += text+"<br>";
+
+}
+
+}
+
+
+
+read();
+
+
+
+});
+
+
+}
+
+
+read();
+
+
+
+});
+
+}
+
+
+function formatOutput(data){
+
+
+let text;
+
+
+if(typeof data==="object"){
+
+    text = JSON.stringify(data,null,2);
+
+}
+else{
+
+    text = data;
+
+}
+
+
+// remove unwanted symbols
+
+text = text
+.replace(/\\n/g," ")
+.replace(/###/g,"")
+.replace(/\*\*/g,"")
+.replace(/\\'/g,"'");
+
+
+// keep line spacing
+
+return text.replace(/\n/g,"<br>");
+
+}
+
+
+</script>
+
+
+</body>
+
+
+</html>
